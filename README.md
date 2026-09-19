@@ -89,6 +89,15 @@ resume-evidence-workflow/
 
 具体工作流、证据结构、提问停止规则、语音输入处理和简历 Skill 路由规则均在 `SKILL.md` 及其按需引用的文档中。
 
+## 请我喝杯奶茶 🧋
+
+如果这套工作流对你有帮助，欢迎请我喝杯奶茶。分享使用体验或给仓库点个 Star，也很感谢。
+
+<p align="center">
+  <img src="assets/support-alipay.jpg" alt="支付宝收款二维码" width="300">
+  <img src="assets/support-wechat.jpg" alt="微信支付收款二维码" width="300">
+</p>
+
 ## License
 
 MIT
