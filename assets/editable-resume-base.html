@@ -15,6 +15,13 @@
 .edit-block{white-space:pre-wrap;min-height:1em}.edit-block:focus{outline:1px dashed #4d79c7;background:#f5f8ff}.edit-block:empty:before{content:'输入内容';color:#a6adb5}.selected-block{outline:2px solid #74a2d8!important}
 body.print-preflight{background:#fff}body.print-preflight .page{margin:0;box-shadow:none;width:210mm;height:295.5mm;max-height:295.5mm}body.print-preflight .toolbar,body.print-preflight #warning{display:none!important}
 @media print{html,body{width:210mm;height:auto;margin:0!important;padding:0!important;background:#fff}.toolbar,#warning{display:none!important}.page{display:block;margin:0!important;box-shadow:none;width:210mm;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible;break-after:avoid-page;page-break-after:avoid}.edit-block:empty:before{content:''}@page{size:A4;margin:0}}
+#copyPanel{max-width:210mm;margin:12px auto;background:white;padding:16px;border:1px solid #ccd3dc;font:14px/1.5 Arial,sans-serif}
+#copyPanel[hidden]{display:none!important}
+.copy-card{margin:14px 0;padding-top:10px;border-top:1px solid #ddd}
+.copy-card h3{font-size:14px;margin:0 0 6px}.copy-card textarea{display:block;width:100%;min-height:130px;padding:9px;font:14px/1.5 Arial,sans-serif;resize:vertical;box-sizing:border-box}
+.copy-card button{margin-top:6px;padding:7px 14px;cursor:pointer}.copy-result{margin-left:10px;color:#164f84}
+
+@media print{#copyPanel{display:none!important}}
 </style>
 </head>
 <body>
@@ -30,9 +37,10 @@ body.print-preflight{background:#fff}body.print-preflight .page{margin:0;box-sha
   <button class="primary" onclick="fitOnePage()">自动适配一页</button>
   <button onclick="saveDraft()">保存修改</button><button onclick="downloadHTML()">下载 HTML</button>
   <button class="primary" onclick="printResume()">生成 PDF</button>
-  <small>点击简历文字即可编辑</small><small id="fitStatus">页面占比：待检测</small>
+  <button onclick="toggleCopyPanel()">网申正文复制</button><small>点击简历文字即可编辑</small><small id="fitStatus">页面占比：待检测</small>
 </div>
 <div id="warning">内容仍超过一页安全范围。请先确认内容或布局调整方案，不要继续缩小字体。</div>
+<aside id="copyPanel" hidden></aside>
 <main id="page" class="page">
   <h1 class="edit-block">姓名</h1><p class="muted edit-block">联系方式｜目标岗位</p>
   <h2 class="edit-block">教育背景</h2><div class="row"><b class="row-main edit-block">学校名称<br>硕士专业／学位</b><span class="row-date edit-block">时间</span></div>
@@ -142,5 +150,43 @@ function printGuide(){
 function printResume(){if(!window.confirm(printGuide()))return;const result=preparePrint();if(!result.safe){finishPrint();warning.textContent='打印预检仍检测到溢出或页面占比不足，已暂停生成 PDF。请继续调整内容或版式。';warning.style.display='block';return}window.print()}
 window.addEventListener('beforeprint',()=>{if(!document.body.classList.contains('print-ready'))preparePrint()});window.addEventListener('afterprint',finishPrint);
 window.addEventListener('load',()=>{const saved=localStorage.getItem(storageKey());if(saved){page.innerHTML=saved;page.querySelectorAll('.edit-block').forEach(el=>el.setAttribute('contenteditable','true'))}document.fonts.ready.then(()=>updateFitStatus(contentMetrics()))});
+/* Application forms: descriptions only; headings are labels, never copied. */
+function collectCopyEntries(resumePage){
+ const records=[];let record=null,section='';
+ for(const el of resumePage.children){
+  if(el.matches('h2')){section=el.innerText.trim();record=null;continue}
+  if(el.matches('.row')&&el.querySelector('b.row-main')){
+   record={label:el.querySelector('.row-main').innerText.trim(),section,parts:[]};records.push(record);continue;
+  }
+  if(!record)continue;
+  if(el.matches('p')){
+   // Standalone role/department metadata is not part of the description.
+   if(el.dataset.copyExclude==='true')continue;
+   if(el.innerText.trim())record.parts.push(el.innerText.trim());
+  }else if(el.matches('ul,ol')){
+   for(const item of el.children)if(item.innerText.trim())record.parts.push(item.innerText.trim());
+  }
+ }
+ return records.filter(r=>r.parts.length);
+}
+function buildCopyPanel(){
+ const panel=document.getElementById('copyPanel');panel.replaceChildren();
+ const title=document.createElement('h2');title.textContent='网申正文复制';panel.append(title);
+ const hint=document.createElement('p');hint.textContent='每框是一段经历的概述与正文，不含公司、职位和日期。内容同步自当前简历；如自动复制不可用，可在框内全选复制。';panel.append(hint);
+ document.querySelectorAll('.page').forEach((resumePage,index)=>{
+  const lang=(resumePage.lang||document.documentElement.lang).startsWith('en')?'English':'中文';
+  for(const entry of collectCopyEntries(resumePage)){
+   const card=document.createElement('section');card.className='copy-card';
+   const heading=document.createElement('h3');heading.textContent=lang+' · '+entry.label;
+   const field=document.createElement('textarea');field.readOnly=true;field.value=entry.parts.join('\n');field.setAttribute('aria-label',heading.textContent+' 正文');
+   const button=document.createElement('button');button.type='button';button.textContent='复制正文';
+   const status=document.createElement('span');status.className='copy-result';status.setAttribute('role','status');
+   button.addEventListener('click',async()=>{field.focus();field.select();try{if(!navigator.clipboard?.writeText)throw Error('unavailable');await navigator.clipboard.writeText(field.value);status.textContent='已复制正文'}catch(error){status.textContent='正文已选中，请按 Cmd+C / Ctrl+C'}});
+   card.append(heading,field,button,status);panel.append(card);
+  }
+ });
+}
+function toggleCopyPanel(){const panel=document.getElementById('copyPanel');if(panel.hidden){buildCopyPanel();panel.hidden=false;panel.scrollIntoView({block:'start',behavior:'smooth'})}else panel.hidden=true}
+document.addEventListener('input',event=>{if(event.target.closest('.page')&&!document.getElementById('copyPanel').hidden)buildCopyPanel()});
 </script>
 </body></html>

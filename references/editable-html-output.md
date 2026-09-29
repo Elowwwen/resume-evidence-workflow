@@ -87,3 +87,23 @@ Before delivery, test that:
 When a reusable editable master HTML exists, duplicate it and edit only the content blocks and approved section structure needed for the new job description (JD). Preserve its CSS, toolbar, editor script, print logic, and layout primitives byte-for-byte unless the user requested a design or editor change.
 
 Do not regenerate the full HTML shell for every application. Rebuilding is allowed only when no master exists, the master is incompatible with the requested output, or the user approves a redesign. After an editor fix, update the master once so later variants inherit it.
+
+
+## Description-only copying for application forms
+
+Include the base template's non-printing `网申正文复制` panel. Each experience is one plain-text block containing its overview and bullets, in order; employer, role, dates, location and department are excluded. Show identifying fields as labels outside the copied text. Do not claim this improves automatic ATS parsing.
+
+The base template detects entries from `.row` elements containing `b.row-main`, ending at the next entry or `h2`. Description paragraphs and list items follow the header. Mark standalone metadata paragraphs with `data-copy-exclude="true"`; never mark real body text for exclusion based on bold styling or specific organization names. Keep dates and locations inside header rows, not body paragraphs. If an existing master uses different markup, adapt the entry selector or provide explicit grouping while preserving its design.
+
+Example with fictional placeholder content:
+
+```html
+<div class="row"><b class="row-main edit-block">Example Company | Intern</b><span class="row-date edit-block">2024–2025</span></div>
+<p class="edit-block" data-copy-exclude="true">Example department</p>
+<p class="edit-block">Overview of the work.</p>
+<ul><li class="edit-block">Description of a contribution.</li></ul>
+```
+
+Build copy text from the live edited DOM, not a frozen duplicate. Refresh it after body edits and whenever the panel opens. Use plain-text clipboard writes; only show success after the write resolves. On denial or unavailable clipboard support, select the read-only textarea and explain the keyboard shortcut. Keep the panel outside `.page` so it cannot affect fitting, and hide it in print CSS.
+
+Verify overview and bullet ordering, metadata exclusion, multiple entries/languages, edited content, clipboard fallback and print exclusion. Run `node tests/copy-description.test.cjs` for the DOM-extraction regression tests; this does not replace browser clipboard/print verification.
