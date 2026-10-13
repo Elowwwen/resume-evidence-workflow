@@ -1,6 +1,6 @@
 ---
 name: resume-evidence-workflow
-description: Build a reusable career-evidence bank, match it to a job description (JD), select the best installed resume skill, and deliver an application-ready resume. Use for career deep-dives, evidence-backed resume tailoring, or choosing among resume skills for a specific market, role, and language. Accept typed, dictated, transcribed, and audio-derived narratives. Do not use merely to format a finished resume or answer one isolated interview question.
+description: Build a reusable career-evidence bank, match it to a job description (JD), use focused writing methods, and deliver an application-ready resume. Use for career deep-dives, evidence-backed resume tailoring, or producing a resume for a specific market, role, and language. Accept typed, dictated, transcribed, and audio-derived narratives. Do not use merely to format a finished resume or answer one isolated interview question.
 ---
 
 # Resume Evidence Workflow
@@ -10,7 +10,7 @@ Run only the stage the user currently needs. Resume from existing files instead 
 1. inventory existing material;
 2. deep-dive and maintain a portable Markdown evidence bank plus reusable base-resume files;
 3. decode the job description (JD) and map requirements to evidence;
-4. select the best available resume skill;
+4. choose the needed writing and artifact methods;
 5. rewrite, verify, and deliver an application-ready resume;
 6. write newly confirmed or corrected facts back to the evidence bank.
 
@@ -44,7 +44,7 @@ When creating or changing the bank, read [evidence-schema.md](references/evidenc
 
 ## Stage B: decode the job description (JD)
 
-Keep the job description (JD) visible through the rewrite. Extract its business objective, must-haves, preferred signals, role family, seniority, market, language, ATS terms, and likely evidence standard.
+Keep the complete original job description (JD) available through final verification. By default, analyze which experiences address each requirement, what adjacent evidence can transfer, and where evidence is missing. Give an overall suitability judgment or apply/do-not-apply recommendation only when the user explicitly asks whether the role fits or whether they should apply. Do not assign a default fit score or percentage. Extract its business objective, must-haves, preferred signals, role family, seniority, market, language, ATS terms, and likely evidence standard.
 
 Before requesting a resume, look for the reusable files defined in [resume-workspace.md](references/resume-workspace.md). Use `基础简历.md` for current selection and wording, `简历版式档案.md` for layout, and the evidence bank for deeper or newly relevant facts. A PDF is a calibration source, not a recurring prerequisite.
 
@@ -52,23 +52,27 @@ Before rewriting, show a requirement-to-evidence matrix distinguishing direct, a
 
 ## Stage C: choose a resume skill
 
-Read [jd-and-skill-routing.md](references/jd-and-skill-routing.md). Use installed skill descriptions to shortlist plausible candidates, then read only the complete `SKILL.md` files of the best two or three. Select one primary content-rewrite skill and, only if needed, one separate artifact/rendering skill.
+Keep this workflow as the single execution plan. Read [jd-and-skill-routing.md](references/jd-and-skill-routing.md) when a concrete missing writing method, specialist requirement, requested skill or artifact format warrants another skill. Consult only the needed method or renderer; reuse confirmed evidence and preferences.
 
-If no suitable skill is installed, offer either a conservative direct rewrite using [application-ready-resume.md](references/application-ready-resume.md), or a read-only search for up to three relevant public skills. Do not install or execute third-party code without the user's choice and required permission.
+If no extra skill is needed or installed, continue directly using [application-ready-resume.md](references/application-ready-resume.md). Search for public skills only when a concrete missing capability warrants it or the user asks. Do not install or execute third-party code without the user's choice and required permission.
 
 ## Stage D: rewrite and deliver
 
 Before deleting or materially merging an experience, project, overview, bullet, education item, or user-supplied section, show the proposal and obtain approval. Lack of job-description relevance is a reason to recommend removal, not authorization to remove it.
 
-Before drafting, ask whether the user wants self-positioning/professional summary, self-evaluation, or an intended position, and whether the resume is dedicated to one job description (JD) or reused across roles.
+Reuse confirmed preferences for summary, intended position and scope; ask only when unresolved. Save the actual pre-revision content as V0. Allocate space by JD priorities in a readable layout, draft concisely, and render a first content pass for HTML before final review. When included, reconstruct the professional summary for this JD using verified evidence.
 
 Read [resume-section-structure.md](references/resume-section-structure.md) before arranging sections. Determine sections from the candidate's actual career stage and relationship types. Formal employment, internships, and non-employment experience must remain distinguishable; section names may adapt to the job description (JD) without obscuring or upgrading the relationship type.
 
-Give the selected skill the job description (JD), matching matrix, relevant evidence, required retained content, and the user's explicit presentation instructions. Let that skill determine the writing method. Then read [application-ready-resume.md](references/application-ready-resume.md) for workflow and artifact validation. If HTML is selected, additionally read [editable-html-output.md](references/editable-html-output.md) and use [assets/editable-resume-base.html](assets/editable-resume-base.html). A static HTML page is not an acceptable substitute for the editable artifact. Include the template’s description-only copy panel for application forms: one experience body per block, excluding employer, role, dates and other metadata; see the HTML reference for markup and validation.
+Use the job description (JD), matching matrix, relevant evidence, required retained content and user instructions to rewrite. When another skill is consulted, pass it this context and apply its needed method within this workflow. Then read [application-ready-resume.md](references/application-ready-resume.md) for workflow and artifact validation. If HTML is selected, additionally read [editable-html-output.md](references/editable-html-output.md) and use [assets/editable-resume-base.html](assets/editable-resume-base.html). A static HTML page is not an acceptable substitute for the editable artifact. Include the template’s application-form copy panel: three separate fields for full employer name, role/title and dates, plus a fourth field for overview and bullets, each with its own copy button; see the HTML reference for markup and validation.
 
 Before drafting repeated experience angles from scratch, read [reusable resume content](references/reusable-resume-content.md). Reuse a verified expression only when its evidence boundary and target angle still fit the current job description (JD); tailor it rather than copying mechanically.
 
 If the reusable workspace already contains `基础简历.html`, copy that master and patch only the content blocks and approved section changes. Do not rewrite its HTML shell, CSS, toolbar, or print script for each job description (JD). Use the generic asset only when no compatible master exists.
+
+After each targeted content revision, execute [Grooming](references/grooming.md). Show the user material before/after changes, the JD requirement each addresses, and the evidence used. Repair issues before delivery.
+
+Communicate the action and its basis directly. Explain evidence boundaries only when a specific ambiguity or risk affects the result; avoid unsolicited defensive statements about claims the user did not request.
 
 ## Stage E: update memory
 
@@ -76,6 +80,6 @@ During job-description matching and rewriting, promptly record genuinely new evi
 
 Do not automatically overwrite `基础简历.md` with every tailored version. Update it only when the user adopts a change as a new general default. Updating evidence does not automatically change the base resume; updating the base resume does not replace more precise evidence.
 
-After the user accepts the final resume, make at most one incremental reuse-library update pass. Tell the user which reusable module was added, changed, or left unchanged. Do not spend a separate generation pass when nothing materially reusable changed. Read [reusable resume content](references/reusable-resume-content.md) for duplicate, replacement, and notification boundaries.
+After the user accepts the final resume, make at most one incremental reuse-library update pass. Tell the user which reusable module was added or changed; skip a redundant announcement when nothing changed. Do not spend a separate generation pass when nothing materially reusable changed. Read [reusable resume content](references/reusable-resume-content.md) for duplicate, replacement, and notification boundaries.
 
 Do not route into mock interviews or generate interview packages as part of this workflow. The evidence bank can nevertheless preserve compact examples of decisions, collaboration, difficulty, and retrospective learning that the user may reuse elsewhere.

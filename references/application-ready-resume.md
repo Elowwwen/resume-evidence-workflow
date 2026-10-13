@@ -20,12 +20,19 @@ A rewrite is complete only when the user has a final artifact suitable for the i
 
 - Material deletions or mergers were approved.
 - The selected resume skill and any overridden rule are documented internally.
-- Before drafting, the user was asked whether to include self-positioning or a professional summary, self-evaluation, and an intended or target position.
+- Confirmed preferences for summary and target position were reused; unresolved choices were clarified.
 - The intended-position decision accounts for whether the file is dedicated to one job description (JD) or may be reused for multiple roles. Do not insert a narrow target role by default when broader reuse matters.
 - The user's section choices override defaults in the selected resume skill or template.
 - Formal employment, internships, and non-employment entries remain clearly distinguishable; formal work experience is not placed inside or overshadowed by an internship-led structure.
 - Section selection and ordering fit the candidate's career stage as well as the target job description (JD).
 - Section names fit the target job description (JD) without misrepresenting employment type, role, or ownership.
+
+## Content review
+
+- Preserve V0 and run `grooming.md` after targeted revisions.
+- Show material changes with their corresponding JD requirements and evidence.
+- Chinese writing may use concise context and meaningful work-focus labels; English uses action-led standalone bullets with necessary context integrated. Write natively for each language.
+- Plan space before drafting and inspect the first content render before final review.
 
 ## Artifact checks
 

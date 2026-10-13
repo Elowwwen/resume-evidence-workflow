@@ -1,5 +1,9 @@
 # Job Description (JD) and Resume-Skill Routing
 
+Use this reference only when a concrete missing method, specialist need, user request or artifact format warrants another skill. This workflow remains the execution plan. Do not routinely compare or load multiple resume skills. Reuse confirmed material and avoid importing another collection or approval flow. If no additional method is needed, continue directly.
+
+JD evidence adaptation is the default. Assess overall suitability and recommend whether to apply only when explicitly asked.
+
 Choose a resume skill for the actual job, candidate, and output—not by popularity or installation order.
 
 ## Build the routing profile

@@ -15,13 +15,24 @@
 .edit-block{white-space:pre-wrap;min-height:1em}.edit-block:focus{outline:1px dashed #4d79c7;background:#f5f8ff}.edit-block:empty:before{content:'输入内容';color:#a6adb5}.selected-block{outline:2px solid #74a2d8!important}
 body.print-preflight{background:#fff}body.print-preflight .page{margin:0;box-shadow:none;width:210mm;height:295.5mm;max-height:295.5mm}body.print-preflight .toolbar,body.print-preflight #warning{display:none!important}
 @media print{html,body{width:210mm;height:auto;margin:0!important;padding:0!important;background:#fff}.toolbar,#warning{display:none!important}.page{display:block;margin:0!important;box-shadow:none;width:210mm;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible;break-after:avoid-page;page-break-after:avoid}.edit-block:empty:before{content:''}@page{size:A4;margin:0}}
+/* Screen editing uses fixed A4; printed sheets use natural height. */
+.page{height:297mm}
 #copyPanel{max-width:210mm;margin:12px auto;background:white;padding:16px;border:1px solid #ccd3dc;font:14px/1.5 Arial,sans-serif}
 #copyPanel[hidden]{display:none!important}
 .copy-card{margin:14px 0;padding-top:10px;border-top:1px solid #ddd}
 .copy-card h3{font-size:14px;margin:0 0 6px}.copy-card textarea{display:block;width:100%;min-height:130px;padding:9px;font:14px/1.5 Arial,sans-serif;resize:vertical;box-sizing:border-box}
 .copy-card button{margin-top:6px;padding:7px 14px;cursor:pointer}.copy-result{margin-left:10px;color:#164f84}
+@media print{
+ html,body{width:210mm;height:auto!important;min-height:0!important;margin:0!important;padding:0!important}
+ .toolbar,#warning,#copyPanel{display:none!important}
+ .page{box-sizing:border-box;width:210mm;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding-top:var(--page-pad);padding-bottom:0!important;overflow:visible!important;break-before:auto;break-after:auto;page-break-before:auto;page-break-after:auto}
+ .page~.page{break-before:page;page-break-before:always}
+ .page>:last-child{margin-bottom:0!important}
+ @page{size:A4;margin:0}
+}
+/* Must override print height:auto while measuring in beforeprint. */
+body.print-preflight .page{height:295.5mm!important;min-height:295.5mm!important;max-height:295.5mm!important;margin:0!important;padding-bottom:var(--page-pad)!important}
 
-@media print{#copyPanel{display:none!important}}
 </style>
 </head>
 <body>
@@ -44,7 +55,7 @@ body.print-preflight{background:#fff}body.print-preflight .page{margin:0;box-sha
 <main id="page" class="page">
   <h1 class="edit-block">姓名</h1><p class="muted edit-block">联系方式｜目标岗位</p>
   <h2 class="edit-block">教育背景</h2><div class="row"><b class="row-main edit-block">学校名称<br>硕士专业／学位</b><span class="row-date edit-block">时间</span></div>
-  <h2 class="edit-block">工作经历</h2><div class="row"><b class="row-main edit-block">公司｜职位</b><span class="row-date edit-block">时间</span></div><ul><li class="edit-block">用经验证据替换此处内容。</li></ul>
+  <h2 class="edit-block">工作经历</h2><div class="row"><b class="row-main edit-block"><span data-copy-field="company">完整公司名称</span><br><span data-copy-field="role">职位名称</span></b><span class="row-date edit-block" data-copy-field="dates">时间</span></div><ul><li class="edit-block">用经验证据替换此处内容。</li></ul>
   <h2 class="edit-block">项目经历</h2><div class="row"><b class="row-main edit-block">项目名称</b><span class="row-date edit-block">时间</span></div><ul><li class="edit-block">保留原始数据和职责边界。</li></ul>
   <h2 class="edit-block">技能</h2><div class="skills"><p class="edit-block">内容策划｜用户研究｜数据分析</p><p class="edit-block">语言与工具</p></div>
 </main>
@@ -83,7 +94,8 @@ function spacing(d){set('--paragraph-gap',Math.max(0,Math.min(16,n('--paragraph-
 function align(command){document.execCommand(command,false,null)}
 function insertBlock(){const anchor=currentBlock||page.lastElementChild,isList=anchor.matches('li'),block=document.createElement(isList?'li':'p');block.className='edit-block';block.contentEditable='true';block.innerHTML='<br>';anchor.parentElement.insertBefore(block,anchor.nextSibling);block.focus();currentBlock=block}
 function deleteBlock(){if(!currentBlock)return;if(currentBlock.matches('h1,h2,.row-date')){warning.textContent='标题、姓名和日期字段请直接修改文字，不建议整块删除。';warning.style.display='block';return}const next=currentBlock.nextElementSibling||currentBlock.previousElementSibling;currentBlock.remove();currentBlock=next;if(next&&next.focus)next.focus();updateFitStatus(contentMetrics())}
-function contentMetrics(){
+function contentMetrics(sheet=page){
+  const page=sheet;
   const pageBox=page.getBoundingClientRect(),style=getComputedStyle(page),topPad=parseFloat(style.paddingTop),bottomPad=parseFloat(style.paddingBottom);
   const children=[...page.children].filter(el=>getComputedStyle(el).display!=='none');
   const available=Math.max(1,page.clientHeight-topPad-bottomPad);
@@ -91,9 +103,10 @@ function contentMetrics(){
   const bottom=Math.max(...children.map(el=>{const box=el.getBoundingClientRect(),s=getComputedStyle(el);return box.bottom+parseFloat(s.marginBottom||0)}));
   const used=Math.max(0,bottom-(pageBox.top+topPad));
   const innerRatio=used/available;
-  const pageRatio=(topPad+used)/Math.max(1,page.clientHeight);
+  const pageRatio=(topPad+used)/(297*96/25.4);
   return{used,available,innerRatio,ratio:pageRatio,overflow:page.scrollHeight>page.clientHeight+1||used>available+1};
 }
+const measureSheet=contentMetrics;
 function usedRatio(){return contentMetrics().ratio}
 function overflow(){return contentMetrics().overflow}
 const fitSpecs=[
@@ -107,7 +120,8 @@ const fitSpecs=[
 function fitSnapshot(){return Object.fromEntries(fitSpecs.map(spec=>[spec.name,n(spec.name)]))}
 function restoreFit(state){fitSpecs.forEach(spec=>set(spec.name,state[spec.name],spec.unit))}
 function updateFitStatus(value){const metrics=typeof value==='number'?{ratio:value,overflow:value>1}:value;fitStatus.textContent=`整页内容占比：${(metrics.ratio*100).toFixed(1)}%｜打印预计：${metrics.overflow?'2页或更多':'1页'}`}
-function fitOnePage(target=.97,compressOnly=false){
+function fitOnePage(target=.97,compressOnly=false,sheet=page){
+  const contentMetrics=()=>measureSheet(sheet);
   warning.style.display='none';
   const lower=.95,settled=Math.max(lower,target-.003);
   let metrics=contentMetrics(),best=metrics.ratio<=target&&!metrics.overflow?fitSnapshot():null,bestDistance=best?target-metrics.ratio:Infinity;
@@ -132,14 +146,21 @@ function fitOnePage(target=.97,compressOnly=false){
   if(best)restoreFit(best);
   metrics=contentMetrics();updateFitStatus(metrics);
   if(metrics.overflow||metrics.ratio>1){warning.textContent='内容在安全字号、间距和页边距下仍超过一页。请先批准内容或结构调整方案。';warning.style.display='block'}
-  else if(metrics.ratio<lower){warning.textContent='页面内容占比仍低于 95%。建议恢复相关且已批准的内容，或重新平衡模块；自动适配不会把字号和间距放大到不自然。';warning.style.display='block'}
+  else if(metrics.ratio<lower){warning.textContent='页面内容占比低于参考范围。可检查相关素材与模块间距；可读且无溢出的页面仍可打印。';warning.style.display='block'}
   else if(metrics.ratio>target){warning.textContent='页面内容仍高于当前安全目标，请检查打印预览或进一步调整内容。';warning.style.display='block'}
   return metrics;
 }
 function storageKey(){return `editable-resume:${document.title}:${location.pathname}`}
 function saveDraft(){localStorage.setItem(storageKey(),page.innerHTML);warning.textContent='修改已保存在此浏览器中。';warning.style.display='block'}
 function downloadHTML(){if(currentBlock)currentBlock.classList.remove('selected-block');const html='<!doctype html>\n'+document.documentElement.outerHTML;const blob=new Blob([html],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(document.title||'简历')+'.html';a.click();URL.revokeObjectURL(a.href)}
-function preparePrint(){document.body.classList.add('print-preflight');if(currentBlock)currentBlock.classList.remove('selected-block');const metrics=fitOnePage(.97,false);const safe=!metrics.overflow&&metrics.ratio>=.95&&metrics.ratio<=.98;document.body.classList.toggle('print-ready',safe);document.body.classList.remove('print-preflight');updateFitStatus(metrics);return{safe,metrics}}
+function preparePrint(){
+ document.body.classList.add('print-preflight');if(currentBlock)currentBlock.classList.remove('selected-block');
+ const results=[...document.querySelectorAll('.page')].map(sheet=>fitOnePage(.97,true,sheet));
+ // Shared page settings can affect earlier sheets; remeasure every page after fitting.
+ const metrics=[...document.querySelectorAll('.page')].map(sheet=>contentMetrics(sheet));
+ const safe=metrics.every(m=>!m.overflow&&m.ratio<=.98);
+ document.body.classList.toggle('print-ready',safe);document.body.classList.remove('print-preflight');updateFitStatus(metrics[0]);return{safe,metrics};
+}
 function finishPrint(){document.body.classList.remove('print-preflight','print-ready');updateFitStatus(contentMetrics())}
 function printGuide(){
   const ua=navigator.userAgent;
@@ -147,19 +168,26 @@ function printGuide(){
   if(/Safari/.test(ua)&&!/Chrome|Chromium|CriOS|Edg\//.test(ua))return 'Safari 导出提示：\n\n1. 在打印窗口点击“显示详细信息”\n2. 取消勾选“打印页眉和页脚”\n3. 纸张选择 A4，确认预览只有一页再保存\n\n否则 PDF 可能带有日期、网页标题或本地 HTML 路径。是否继续？';
   return '导出提示：\n\n请在浏览器打印设置中关闭“页眉和页脚”，选择 A4，并确认预览只有一页。否则 PDF 可能带有日期、网页标题、本地路径或页码。是否继续？';
 }
-function printResume(){if(!window.confirm(printGuide()))return;const result=preparePrint();if(!result.safe){finishPrint();warning.textContent='打印预检仍检测到溢出或页面占比不足，已暂停生成 PDF。请继续调整内容或版式。';warning.style.display='block';return}window.print()}
+function printResume(){if(!window.confirm(printGuide()))return;const result=preparePrint();if(!result.safe){finishPrint();warning.textContent='打印预检仍检测到内容溢出，已暂停生成 PDF。请继续调整内容或版式。';warning.style.display='block';return}window.print()}
 window.addEventListener('beforeprint',()=>{if(!document.body.classList.contains('print-ready'))preparePrint()});window.addEventListener('afterprint',finishPrint);
 window.addEventListener('load',()=>{const saved=localStorage.getItem(storageKey());if(saved){page.innerHTML=saved;page.querySelectorAll('.edit-block').forEach(el=>el.setAttribute('contenteditable','true'))}document.fonts.ready.then(()=>updateFitStatus(contentMetrics()))});
-/* Application forms: descriptions only; headings are labels, never copied. */
+/* Application forms: independently copy employer, role, dates and description. */
 function collectCopyEntries(resumePage){
  const records=[];let record=null,section='';
  for(const el of resumePage.children){
   if(el.matches('h2')){section=el.innerText.trim();record=null;continue}
   if(el.matches('.row')&&el.querySelector('b.row-main')){
-   record={label:el.querySelector('.row-main').innerText.trim(),section,parts:[]};records.push(record);continue;
+   const main=el.querySelector('.row-main');
+   const company=main.querySelector('[data-copy-field="company"]')||el.querySelector('[data-copy-field="company"]');
+   const role=el.querySelector('[data-copy-field="role"]');
+   const dates=el.querySelector('[data-copy-field="dates"]');
+   const lines=main.innerText.trim().split('\n').map(t=>t.trim()).filter(Boolean);
+   const legacy=(lines[0]||'').split(/\s*[｜|]\s*/);
+   record={label:main.innerText.trim(),section,company:company?company.innerText.trim():legacy[0],role:role?role.innerText.trim():(legacy.slice(1).join('｜')||lines.slice(1).join('\n')),dates:dates?dates.innerText.trim():(el.querySelector('.row-date')?.innerText.trim()||''),parts:[]};records.push(record);continue;
   }
   if(!record)continue;
   if(el.matches('p')){
+   if(el.dataset.copyField==='role'){record.role=el.innerText.trim();continue}
    // Standalone role/department metadata is not part of the description.
    if(el.dataset.copyExclude==='true')continue;
    if(el.innerText.trim())record.parts.push(el.innerText.trim());
@@ -172,17 +200,24 @@ function collectCopyEntries(resumePage){
 function buildCopyPanel(){
  const panel=document.getElementById('copyPanel');panel.replaceChildren();
  const title=document.createElement('h2');title.textContent='网申正文复制';panel.append(title);
- const hint=document.createElement('p');hint.textContent='每框是一段经历的概述与正文，不含公司、职位和日期。内容同步自当前简历；如自动复制不可用，可在框内全选复制。';panel.append(hint);
+ const hint=document.createElement('p');hint.textContent='每段经历提供完整公司名、职位名、日期三个独立方框，以及一个工作内容框，可分别复制。内容同步自当前简历；如自动复制不可用，可在框内全选复制。';panel.append(hint);
  document.querySelectorAll('.page').forEach((resumePage,index)=>{
   const lang=(resumePage.lang||document.documentElement.lang).startsWith('en')?'English':'中文';
   for(const entry of collectCopyEntries(resumePage)){
    const card=document.createElement('section');card.className='copy-card';
    const heading=document.createElement('h3');heading.textContent=lang+' · '+entry.label;
-   const field=document.createElement('textarea');field.readOnly=true;field.value=entry.parts.join('\n');field.setAttribute('aria-label',heading.textContent+' 正文');
-   const button=document.createElement('button');button.type='button';button.textContent='复制正文';
-   const status=document.createElement('span');status.className='copy-result';status.setAttribute('role','status');
-   button.addEventListener('click',async()=>{field.focus();field.select();try{if(!navigator.clipboard?.writeText)throw Error('unavailable');await navigator.clipboard.writeText(field.value);status.textContent='已复制正文'}catch(error){status.textContent='正文已选中，请按 Cmd+C / Ctrl+C'}});
-   card.append(heading,field,button,status);panel.append(card);
+   card.append(heading);
+   for(const [label,value] of [['公司名',entry.company],['职位名',entry.role],['日期',entry.dates],['工作内容',entry.parts.join('\n')]]){
+    const wrapper=document.createElement('div');
+    const caption=document.createElement('label');caption.textContent=label;
+    const field=document.createElement('textarea');field.readOnly=true;field.value=value;field.rows=label==='工作内容'?6:2;field.style.minHeight=label==='工作内容'?'130px':'48px';field.setAttribute('aria-label',heading.textContent+' '+label);
+    caption.append(field);
+    const button=document.createElement('button');button.type='button';button.textContent='复制'+label;
+    const status=document.createElement('span');status.className='copy-result';status.setAttribute('role','status');
+    button.addEventListener('click',async()=>{field.focus();field.select();try{if(!navigator.clipboard?.writeText)throw Error('unavailable');await navigator.clipboard.writeText(field.value);status.textContent='已复制'+label}catch(error){status.textContent=label+'已选中，请按 Cmd+C / Ctrl+C'}});
+    wrapper.append(caption,button,status);card.append(wrapper);
+   }
+   panel.append(card);
   }
  });
 }

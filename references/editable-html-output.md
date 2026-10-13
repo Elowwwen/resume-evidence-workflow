@@ -29,7 +29,7 @@ Use [the editable base template](../assets/editable-resume-base.html) as the imp
 
 - Measure occupation against the full A4 page height, including the top and bottom page margins. Do not report the percentage of only the inner writable area: that can label a visually 90%–92% page as 99% full.
 - Define the displayed percentage as the vertical position of the last visible content edge measured from the top edge of the full A4 page. Use the same definition for the status display, automatic fitting, and print preflight.
-- Keep 95%–98% as the acceptable range, but default automatic fitting to roughly 96%–97% so print-font and unit rounding have safety room. Do not force 98% when it causes a second page.
+- Use 95%–98% as a reference target when content volume permits, but default automatic fitting to roughly 96%–97% so print-font and unit rounding have safety room. Do not force 98% when it causes a second page.
 - After content edits, the auto-fit control must remeasure the actual content and work from the current page-level settings rather than resetting the resume first.
 - Whether compressing an overflowing page or expanding an under-filled page, adjust line height first, then paragraph or bullet spacing, then section spacing, then font size, and page margins last.
 - Use small bounded steps and continue searching when one property would overshoot 98%; do not stop the entire fit operation after the first rejected step.
@@ -37,7 +37,7 @@ Use [the editable base template](../assets/editable-resume-base.html) as the imp
 - Recommended line-height floor: 1.25.
 - Do not reduce page margins below roughly 8mm without approval.
 - Never hide overflow, delete content, or compress text to an unreadable size to simulate a one-page result.
-- If safe auto-fitting fails, show a warning and ask the user to approve a content or layout adjustment.
+- If the page still overflows, propose specific content or layout changes for approval. A readable under-filled page can be delivered and printed; avoid padding it to meet a percentage.
 - Show the measured occupied-height percentage after fitting so the user can verify that the control had an effect.
 - Measure against the print-equivalent page box and retain a small print safety buffer; a screen-only 98% calculation is insufficient.
 - Report both occupied-height percentage and whether the current print layout is expected to remain one page. Do not label fitting successful while the print-equivalent layout overflows.
@@ -89,16 +89,16 @@ When a reusable editable master HTML exists, duplicate it and edit only the cont
 Do not regenerate the full HTML shell for every application. Rebuilding is allowed only when no master exists, the master is incompatible with the requested output, or the user approves a redesign. After an editor fix, update the master once so later variants inherit it.
 
 
-## Description-only copying for application forms
+## Separate field copying for application forms
 
-Include the base template's non-printing `网申正文复制` panel. Each experience is one plain-text block containing its overview and bullets, in order; employer, role, dates, location and department are excluded. Show identifying fields as labels outside the copied text. Do not claim this improves automatic ATS parsing.
+Include the base template's non-printing `网申正文复制` panel. Each experience has three separate text boxes for full company name, role/title and dates, plus a fourth for overview and bullets. Each field has its own copy button. Keep metadata out of work content. Preserve complete verified names and dates; ask when an abbreviation cannot be resolved from evidence. Mark source elements with `data-copy-field="company"`, `data-copy-field="role"` and `data-copy-field="dates"`. Keep location outside the date element. Do not claim this improves automatic ATS parsing.
 
 The base template detects entries from `.row` elements containing `b.row-main`, ending at the next entry or `h2`. Description paragraphs and list items follow the header. Mark standalone metadata paragraphs with `data-copy-exclude="true"`; never mark real body text for exclusion based on bold styling or specific organization names. Keep dates and locations inside header rows, not body paragraphs. If an existing master uses different markup, adapt the entry selector or provide explicit grouping while preserving its design.
 
 Example with fictional placeholder content:
 
 ```html
-<div class="row"><b class="row-main edit-block">Example Company | Intern</b><span class="row-date edit-block">2024–2025</span></div>
+<div class="row"><b class="row-main edit-block"><span data-copy-field="company">Example Company</span><br><span data-copy-field="role">Intern</span></b><span class="row-date edit-block" data-copy-field="dates">2024–2025</span></div>
 <p class="edit-block" data-copy-exclude="true">Example department</p>
 <p class="edit-block">Overview of the work.</p>
 <ul><li class="edit-block">Description of a contribution.</li></ul>
@@ -107,3 +107,9 @@ Example with fictional placeholder content:
 Build copy text from the live edited DOM, not a frozen duplicate. Refresh it after body edits and whenever the panel opens. Use plain-text clipboard writes; only show success after the write resolves. On denial or unavailable clipboard support, select the read-only textarea and explain the keyboard shortcut. Keep the panel outside `.page` so it cannot affect fitting, and hide it in print CSS.
 
 Verify overview and bullet ordering, metadata exclusion, multiple entries/languages, edited content, clipboard fallback and print exclusion. Run `node tests/copy-description.test.cjs` for the DOM-extraction regression tests; this does not replace browser clipboard/print verification.
+
+## First render and print pagination
+
+Preserve V0 and allocate readable space by JD priorities before drafting. Render a first content pass before Grooming. Optional company-bold/role-italic hierarchy and Chinese work-focus labels should follow the user's design and preferences.
+
+Use a fixed 297mm A4 denominator for occupancy. During preflight, override print-media auto height with the fixed measurement box. Fit each language page with compression only, then remeasure all pages after shared style changes. Actual printing uses natural height, no trailing padding that causes a blank page, and a page break only before subsequent sheets. Verify actual page count and non-empty text for both single-language and bilingual output.

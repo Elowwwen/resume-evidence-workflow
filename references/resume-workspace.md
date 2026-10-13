@@ -29,6 +29,14 @@ On the first useful resume import:
 
 Do not infer that every fact in the evidence bank belongs in the base resume. The base resume records current selection; the evidence bank records available truth.
 
+## Optional direction baselines and project material
+
+At first baseline creation, ask which roles or directions the user is targeting, unless already known. For recurring use across distinct directions, offer a few direction baselines and explain that they save repeated selection and drafting. One direction needs only one baseline; let the actual goals determine the number. Create additional directions only when the user chooses them. See README for the benefits.
+
+Keep a direction index and only load the closest draft. Each direction is a reusable starting selection, followed by fresh JD analysis, evidence lookup and Grooming. Preserve the chosen visual design. Company-specific omissions stay scoped to that version; explicit long-term decisions are reused.
+
+Maintain an optional project material library using `project-material-library.md`. The evidence bank supplies facts, project material supplies selectable angles, and direction baselines supply starting drafts.
+
 ## Later job-description (JD) runs
 
 Before asking for another resume file, search the current workspace or supplied package for these files. If present:
